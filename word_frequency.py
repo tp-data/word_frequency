@@ -10,10 +10,13 @@ import pandas as pd
 import re
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 
+txt = sys.argv[1]
+min_char = int(sys.argv[2])
 
 # open text file contraining string to analyze
-text = open("text.txt").read()
+text = open(txt).read()
 # remove special characters and convert to lower case
 text = re.sub(r"[^a-zA-Z0-9 ]", "", text).lower()
 text_split = text.split()
@@ -22,6 +25,7 @@ wordfreq = [text_split.count(w) for w in text_split] # count instances of each w
 # convert list into dataframe (take mean to remove duplicates for the final dataset)
 list_freq = pd.DataFrame(list(zip(text_split, wordfreq)))
 list_freq.columns =['word', 'frequency']
+list_freq = list_freq[list_freq['word'].str.len() >= min_char]
 list_freq = list_freq.groupby('word').mean()
 
 # prepare datasets for both the top 5 and 15 groups
@@ -57,10 +61,11 @@ add_text('The 5 most common words to appear in the text were -- ' + str_top5)
 
 # add title and plot for bar chart section
 add_text("See below for the top 15 most common words, and the individual count per each.")
-plt.figure(figsize=(9, 6.5))
+plt.figure(figsize=(10, 6.8))
 plt.bar(list_freq_top20['word'], list_freq_top20['frequency'])
-plt.ylabel('Words')
-plt.xlabel('Count of Occurences')
+# plt.tight_layout()
+plt.xlabel('Words')
+plt.ylabel('Count of Occurences')
 plt.xticks(rotation=45)
 # create and save image to bar chart buffer
 bar = io.BytesIO()
@@ -76,6 +81,7 @@ add_text("See below for the % distribution per top 15 words.")
 plt.figure(figsize=(9, 8))
         # explode = (.1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)  # --> this needs to be implemented with a constraint on how many items are present in x axis
 plt.pie(list_freq_top20['frequency'], labels=list_freq_top20['word'], autopct='%1.1f%%')
+plt.tight_layout()
 plt.legend(list_freq_top20['word'], loc="right")
 # create and save image to pie chart buffer
 pie = io.BytesIO()
